@@ -1,0 +1,66 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "ikc_t500_driver@http://linzcontact.ru/ikc_t500.tar.gz",
+        "scope": null,
+        "escapedName": "ikc_t500_driver",
+        "name": "ikc_t500_driver",
+        "rawSpec": "http://linzcontact.ru/ikc_t500.tar.gz",
+        "spec": "http://linzcontact.ru/ikc_t500.tar.gz",
+        "type": "remote"
+      },
+      "/home/andrey/ikc_t500_terminal"
+    ]
+  ],
+  "_from": "http://linzcontact.ru/ikc_t500.tar.gz",
+  "_id": "ikc_t500_driver@0.17.122",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/ikc_t500_driver",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "ikc_t500_driver@http://linzcontact.ru/ikc_t500.tar.gz",
+    "scope": null,
+    "escapedName": "ikc_t500_driver",
+    "name": "ikc_t500_driver",
+    "rawSpec": "http://linzcontact.ru/ikc_t500.tar.gz",
+    "spec": "http://linzcontact.ru/ikc_t500.tar.gz",
+    "type": "remote"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "http://linzcontact.ru/ikc_t500.tar.gz",
+  "_shasum": "c24d33ad24abea519420bcae8454f7b9bcfc4c5e",
+  "_shrinkwrap": null,
+  "_spec": "ikc_t500_driver@http://linzcontact.ru/ikc_t500.tar.gz",
+  "_where": "/home/andrey/ikc_t500_terminal",
+  "author": {
+    "name": "Евгений Колесников",
+    "email": "kolei@yandex.ru"
+  },
+  "dependencies": {
+    "node-biginteger": "*",
+    "serialport": "3.1.2",
+    "winston": ">=2.2.0"
+  },
+  "description": "Драйвер для терминала первичного учета IKC-T500",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.1.0",
+    "nconf": "*",
+    "prompt": ">=1.0.0",
+    "request": "*"
+  },
+  "license": "ISC",
+  "main": "ikc_t500_driver.js",
+  "name": "ikc_t500_driver",
+  "optionalDependencies": {},
+  "readme": "ikc_t500\n======\n\nБиблиотека для работы с терминалом первичного учета IKC-T500\n\nПример\n======\n\n```\n  // создание экземпляра \n  var ikc_t500 = require('ikc_t500');\n\n  // задаем уровень логгирования (по-умолчанию 'debug'), поддерживаются уровни: error, warn, info, verbose, debug, silly\n  ikc_t500.debuglevel = 'info';\n\n  // открытие порта \n  ikc_t500.open(название порта, [скорость обмена (опционально, по умолчанию 38400)]);\n  \n```\n\nВстроенные типы данных:\n======\n\nikc_t500.GoodsInfo:Object - Информация о товаре \n\n------\n  - numInBase                   // uint16 – порядковый номер товара в базе\n  - price                       // uint32 – цена товара\n  - numGoodsGroup               // uint8 – номер товарной группы\n  - attrTaxGroup                // налоговая группа\n  - attrWeightOrPiece           // весовой (1) / штучный (0)\n  - attrControlGoodsExists      // контролировать наличие товара\n  - attrBlockSaleNotAvailable   // блокировать продажу, если товара нет в наличии\n  - attrNumPaymentName          // номер наименования операции выплаты\n  - goodsPresent                // наличие товара (наверное количество?)\n  - code                        // код товара Int64 (JavaScript не поддерживает 64-разрядное целое, для работы с ними используется модуль node-biginteger) \n  - name                        // название товара (длина строки до 25 символов)\n\n\nМетоды:\n======\n\n\nikc_t500.decodeError(errCode: Number): String - Получение текстового описания ошибки \n------\n- errCode: Number Код ошибки\n- Результат: String Текстовое описание ошибки\n\n\nikc_t500.writeGoodsByNum(goodsInfo: ikc_t500.GoodsInfo, cbFun: Function) - Запись товара по номеру в базе \n------\n- goodsInfo: ikc_t500.GoodsInfo Информация о товаре\n- cbFun: Function(errcode) callback-функция, в параметрах функции передается результат выполнения  \n\n```\n  var goodsInfo = new ikc_t500.GoodsInfo({\n    numInBase: 1,\n    price: 600,\n    numGoodsGroup: 1,\n    attrTaxGroup: 1,\n    attrNumPaymentName: 1,\n    goodsPresent: 1,\n    code: '1152921504606846975',\n    name: 'название товара'\n  });\n\n  ikc_t500.writeGoodsByNum(goodsInfo, function(errCode){\n    // обработка результата\n  });\n\n```\n\n\nikc_t500.getZReport(reportNum: Number, cbFun: Function) - Получение данных о Z-отчете по номеру\n------\n- reportNum: Number - Номер Z-отчета\n- cbFun: Function(errCode: Number, result: Object) - callback-функция\n\nresult: Object = {\n  reportDate: Date,           // время отчёта; \n  countReqTaxBet: Number,     // количество записей налоговых ставок; \n  countChequeSale: Number,    // количество чеков продаж; \n  countChequePay: Number,     // количество чеков выплат; \n  sumSaleByTagGroup: Array(5),// суммы продаж по налоговым группам;\n  sumPayByTaxGroup: Array(5) // суммы выплат или НДС по налоговым группам.\n}\n\n\nikc_t500.writeGoodsByCode(goodsInfo: ikc_t500.GoodsInfo, cbFun: Function) - Запись товара по коду\n------\n- goodsInfo: ikc_t500.GoodsInfo Информация о товаре\n- cbFun: Function(errcode) callback-функция, в параметрах функции передается код ошибки  \n\n\nikc_t500.getHourXReport(hour: Number, cbFun: Function) - Получение данных суточного X-отчета по номеру часа (0..23) \n------\n- hour: Number - Номер часа (0..23)\n- cbFun: Function(errCode: Number, result: Object) - callback-функция\n\nresult: Object = {\n  countChequeSale: Number - количество чеков продаж\n  countChequePay: Number - количество чеков выплат\n  sumSale: Int64 - сумма продаж\n  sumPay: Int64 - сумма выплат\n}\n\n\nikc_t500.readEJournalParams(cbFun: Function) - Чтение параметров электронных журналов\n------\n- cbFun: Function(errcode: Number, result: Array) callback-функция, в параметрах функции передается код ошибки и результат выполнения   \n\nresult: Array of Object {\n  sessionNum: Number          // номер смены\n  sessionDate: Date           // время открытия смены\n  numJournalInSession: Number // номер журнала в смена\n  lenTextPart: Number         // длина текстовой части журнала\n  lenNumberPart: Number       // длина числовой части журнала\n}\n\n\nikc_t500.clearGoodsBase(onlyBad: Boolean, cbFun: Function) - Очистить базу товаров\n------\n- onlyBad: Boolean - удалять только \"сбойные\" записи\n- cbFun: Function(errcode) callback-функция, в параметрах функции передается код ошибки  \n\n\nikc_t500.readEJournal = function(journalNum, readMode, cbFun) - чтение электронного журнала \n------\n- journalNum: Number - номер журнала (0..6)\n- readMode: Number - режим чтения (1-текстовый, 2-бинарный)\n- cbFun: Function(errcode: Number, result: Array of Object) callback-функция, в параметрах функции передается код ошибки и результат выполнения\n         result[i] = {\n           chequeNum: Number - номер чека\n           format: Number - 1-текстовый, 2-бинарный\n           body: Array\n            - для текстового чека: массив строк\n            - для бинарного чека: массив товаров {goodsCode: Int64 - код товара, goodsCount: Number - количество, goodsPrice: Number - цена}\n\n           // только для бинарного чека\n           chequeType: Number - тип чека: 0 - продажа, 1 – выплата, 2 – приём товара, 3 – возврат товара \n           date: Date - время\n           kassir: Number - номер кассира(1..8), или 0 - администратор\n           count: Number - количество наименований товаров(0..200)\n           flag: Number - флаги: бит 0 - есть оплата наличными (1); бит 1 - есть оплата КРТ (1); бит 2 - есть оплата КРД (1); бит 3 - есть номер дисконтной карты (1);\n           cash: Number - оплата наличными\n           KRT: Number - оплата КРТ\n           KRD: Number - оплата КРД\n           discountCard: Int64 - номер дисконтной карты \n         }  \n\n\nОбработчики запросов терминала (должны быть реализованы в хосте):\n======\n\n\nikc_t500.onGetDiscountParams(num, sum, callback) - Запрос параметров дисконтной карты\n------\n- num: Int64 - номер дисконтной карты\n- sum: Number - сумма чека или стоимость последней продажи (в копейках)\n- callback: Function(error:Number - <код завершения>, result: Object = {skidka:<ставка скидки в % * 100>, desc:<описание, строка текста>} \n\n```\nikc_t500.onGetDiscountParams = function(num, sum, callback) {\n  if(callback){\n    // симулирую деятельность\n    setTimeout(function(){\n      callback(0, {skidka:10, desc:'демо скидка'} );\n    }, 3000);\n    return true;\n  }\n  else return false;  \n}\n```\n\n\nikc_t500.onGetGoodsDescription = function(goodsCode, callback) - Запрос описания товара\n------\n- goodsCode:Int64 - код товара\n- callback: Function(errCode: Number, goodsInfo: ikc_t500.GoodsInfo) - в параметрах код ошибки и описание товара\n",
+  "readmeFilename": "README.md",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "version": "0.17.122"
+}
